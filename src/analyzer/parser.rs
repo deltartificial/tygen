@@ -9,7 +9,6 @@ impl TypeParser {
     }
 
     pub fn parse_file(&self, content: &str) -> Result<File> {
-        syn::parse_file(content)
-            .map_err(|e| TypeTesterError::ParseError(e.to_string()))
+        syn::parse_file(content).map_err(|e| TypeTesterError::ParseError(e.to_string()))
     }
-} 
+}

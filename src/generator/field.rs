@@ -1,7 +1,7 @@
+use super::TestGenerator;
 use crate::analyzer::{TypeInfo, TypeKind};
 use proc_macro2::TokenStream;
-use quote::{quote, format_ident};
-use super::TestGenerator;
+use quote::{format_ident, quote};
 
 pub struct FieldTestGenerator;
 
@@ -24,7 +24,9 @@ impl TestGenerator for FieldTestGenerator {
         for field in &type_info.fields {
             let field_name = format_ident!("{}", field.name);
             let test_name = format_ident!("test_field_{}", field.name);
-            let field_type = field.ty.parse::<proc_macro2::TokenStream>()
+            let field_type = field
+                .ty
+                .parse::<proc_macro2::TokenStream>()
                 .unwrap_or_else(|_| quote!(()));
 
             tests.extend(quote! {
@@ -48,4 +50,4 @@ impl TestGenerator for FieldTestGenerator {
 
         tests
     }
-} 
+}

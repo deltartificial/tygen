@@ -1,10 +1,10 @@
 mod parser;
 mod visitor;
 
-use crate::error::Result;
-use std::path::Path;
 pub use self::parser::TypeParser;
 pub use self::visitor::TypeVisitor;
+use crate::error::{Result, TypeTesterError};
+use std::path::Path;
 
 #[derive(Debug, Clone)]
 pub struct TypeInfo {
@@ -13,6 +13,29 @@ pub struct TypeInfo {
     pub derives: Vec<String>,
     pub attributes: Vec<String>,
     pub fields: Vec<FieldInfo>,
+    pub manual_impls: Vec<String>,
+}
+
+impl TypeInfo {
+    pub fn requires_default(&self) -> bool {
+        self.derives.iter().any(|d| {
+            d.contains("Serialize") || d.contains("Deserialize") || d.contains("PartialEq")
+        })
+    }
+
+    pub fn requires_serde(&self) -> bool {
+        self.derives
+            .iter()
+            .any(|d| d.contains("Serialize") || d.contains("Deserialize"))
+    }
+
+    pub fn has_derive(&self, derive: &str) -> bool {
+        self.derives.iter().any(|d| d.contains(derive))
+    }
+
+    pub fn has_implementation(&self, trait_name: &str) -> bool {
+        self.has_derive(trait_name) || self.manual_impls.iter().any(|i| i.contains(trait_name))
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -51,17 +74,38 @@ impl TypeAnalyzer {
 
     fn validate_types(&self, types: &[TypeInfo]) -> Result<()> {
         for type_info in types {
-            if !type_info.derives.contains(&"Debug".to_string()) {
-                return Err(crate::error::TypeTesterError::ValidationError(
-                    format!("Type {} must derive Debug", type_info.name)
-                ));
+            // Required derives or implementations
+            if !type_info.has_implementation("Debug") {
+                return Err(TypeTesterError::ValidationError(format!(
+                    "Type {} must implement Debug",
+                    type_info.name
+                )));
             }
-            if !type_info.derives.contains(&"Clone".to_string()) {
-                return Err(crate::error::TypeTesterError::ValidationError(
-                    format!("Type {} must derive Clone", type_info.name)
-                ));
+            if !type_info.has_implementation("Clone") {
+                return Err(TypeTesterError::ValidationError(format!(
+                    "Type {} must implement Clone",
+                    type_info.name
+                )));
+            }
+
+            // Validate serde requirements
+            if type_info.requires_serde() {
+                if !type_info.has_derive("Serialize") || !type_info.has_derive("Deserialize") {
+                    return Err(TypeTesterError::ValidationError(format!(
+                        "Type {} must derive both Serialize and Deserialize",
+                        type_info.name
+                    )));
+                }
+            }
+
+            // Validate Default requirement
+            if type_info.requires_default() && !type_info.has_implementation("Default") {
+                return Err(TypeTesterError::ValidationError(format!(
+                    "Type {} must implement Default (either derive it or implement it manually)",
+                    type_info.name
+                )));
             }
         }
         Ok(())
     }
-} 
+}

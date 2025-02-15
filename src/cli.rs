@@ -1,7 +1,7 @@
-use clap::Parser;
-use std::path::PathBuf;
-use colored::Colorize;
 use crate::error::{Result, TypeTesterError};
+use clap::Parser;
+use colored::Colorize;
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
@@ -9,7 +9,12 @@ pub struct Cli {
     #[arg(help = "Path to the Rust types file")]
     pub types_file: PathBuf,
 
-    #[arg(short, long, help = "Output directory for generated tests", default_value = "tests")]
+    #[arg(
+        short,
+        long,
+        help = "Output directory for generated tests",
+        default_value = "tests"
+    )]
     pub output_dir: PathBuf,
 
     #[arg(short, long, help = "Verbose output")]
@@ -19,18 +24,17 @@ pub struct Cli {
 impl Cli {
     pub fn validate(&self) -> Result<()> {
         if !self.types_file.exists() {
-            return Err(TypeTesterError::IoError(
-                std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    format!("File not found: {}", self.types_file.display()),
-                ),
-            ));
+            return Err(TypeTesterError::IoError(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                format!("File not found: {}", self.types_file.display()),
+            )));
         }
 
         if !self.types_file.extension().map_or(false, |ext| ext == "rs") {
-            return Err(TypeTesterError::InvalidFileType(
-                format!("File must have .rs extension: {}", self.types_file.display()),
-            ));
+            return Err(TypeTesterError::InvalidFileType(format!(
+                "File must have .rs extension: {}",
+                self.types_file.display()
+            )));
         }
 
         Ok(())
@@ -56,4 +60,4 @@ impl Cli {
     pub fn log_error(&self, message: &str) {
         eprintln!("{} {}", "ERROR:".red().bold(), message);
     }
-} 
+}

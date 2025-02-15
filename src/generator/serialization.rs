@@ -1,7 +1,7 @@
+use super::TestGenerator;
 use crate::analyzer::TypeInfo;
 use proc_macro2::TokenStream;
-use quote::{quote, format_ident};
-use super::TestGenerator;
+use quote::{format_ident, quote};
 
 pub struct SerializationTestGenerator;
 
@@ -13,8 +13,11 @@ impl SerializationTestGenerator {
 
 impl TestGenerator for SerializationTestGenerator {
     fn is_applicable(&self, type_info: &TypeInfo) -> bool {
-        type_info.derives.contains(&"Serialize".to_string()) &&
-        type_info.derives.contains(&"Deserialize".to_string())
+        type_info.requires_serde()
+    }
+
+    fn required_imports(&self) -> Vec<&'static str> {
+        vec!["serde_json"]
     }
 
     fn generate(&self, type_info: &TypeInfo) -> TokenStream {
@@ -46,9 +49,16 @@ impl TestGenerator for SerializationTestGenerator {
                 let value = #type_name::default();
                 let serialized = serde_json::to_value(&value)
                     .expect("Failed to convert to JSON value");
-                assert!(serialized.is_object() || serialized.is_array(), 
+                assert!(serialized.is_object() || serialized.is_array(),
                     "Serialized value must be a JSON object or array");
+            }
+
+            #[test]
+            fn serialization_error_handling() {
+                let invalid_json = r#"{"invalid": json"#;
+                let result = serde_json::from_str::<#type_name>(invalid_json);
+                assert!(result.is_err(), "Should fail with invalid JSON");
             }
         }
     }
-} 
+}

@@ -24,4 +24,4 @@ pub enum TypeTesterError {
     SyntaxError(#[from] syn::Error),
 }
 
-pub type Result<T> = std::result::Result<T, TypeTesterError>; 
+pub type Result<T> = std::result::Result<T, TypeTesterError>;
