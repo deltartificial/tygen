@@ -1,6 +1,6 @@
 use crate::error::Result;
-use crate::analyzer::{TypeInfo, TypeKind};
-use syn::{File, Item, ItemStruct, ItemEnum, Attribute};
+use crate::analyzer::{TypeInfo, TypeKind, FieldInfo};
+use syn::{File, Item, ItemStruct, ItemEnum, Attribute, Field};
 use quote::ToTokens;
 
 pub struct TypeVisitor;
@@ -30,6 +30,7 @@ impl TypeVisitor {
             kind: TypeKind::Struct,
             derives: self.extract_derives(&item.attrs),
             attributes: self.extract_attributes(&item.attrs),
+            fields: self.extract_fields(&item.fields),
         }
     }
 
@@ -39,6 +40,24 @@ impl TypeVisitor {
             kind: TypeKind::Enum,
             derives: self.extract_derives(&item.attrs),
             attributes: self.extract_attributes(&item.attrs),
+            fields: Vec::new(), // Enums don't have direct fields
+        }
+    }
+
+    fn extract_fields(&self, fields: &syn::Fields) -> Vec<FieldInfo> {
+        fields
+            .iter()
+            .map(|field| self.field_to_info(field))
+            .collect()
+    }
+
+    fn field_to_info(&self, field: &Field) -> FieldInfo {
+        FieldInfo {
+            name: field.ident.as_ref()
+                .map(|i| i.to_string())
+                .unwrap_or_default(),
+            ty: field.ty.to_token_stream().to_string(),
+            attributes: self.extract_attributes(&field.attrs),
         }
     }
 

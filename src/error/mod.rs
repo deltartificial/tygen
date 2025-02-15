@@ -2,8 +2,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum TypeTesterError {
-    #[error("Failed to read file: {0}")]
-    FileReadError(#[from] std::io::Error),
+    #[error("IO error: {0}")]
+    IoError(#[from] std::io::Error),
 
     #[error("Failed to parse Rust file: {0}")]
     ParseError(String),
@@ -11,8 +11,11 @@ pub enum TypeTesterError {
     #[error("Invalid file type: {0}")]
     InvalidFileType(String),
 
-    #[error("Failed to generate tests: {0}")]
-    TestGenerationError(String),
+    #[error("Type validation error: {0}")]
+    ValidationError(String),
+
+    #[error("Test generation failed: {0}")]
+    GenerationError(String),
 
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),

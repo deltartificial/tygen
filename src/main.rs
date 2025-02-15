@@ -5,6 +5,7 @@ mod generator;
 
 use clap::Parser;
 use error::Result;
+use generator::TestConfig;
 
 fn main() {
     if let Err(e) = run() {
@@ -25,7 +26,14 @@ fn run() -> Result<()> {
 
     cli.log_info(&format!("Found {} type definitions", types.len()));
 
-    let test_suite = generator::TestSuite::new();
+    let config = TestConfig {
+        check_derives: true,
+        check_serialization: true,
+        check_size: true,
+        check_fields: true,
+    };
+
+    let test_suite = generator::TestSuite::with_config(config);
     let tests = test_suite.generate_tests(&types)?;
 
     let output_path = cli.output_dir.join("generated_tests.rs");

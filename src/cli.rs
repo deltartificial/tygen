@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::path::PathBuf;
 use colored::Colorize;
-use crate::error::Result;
+use crate::error::{Result, TypeTesterError};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about)]
@@ -19,7 +19,7 @@ pub struct Cli {
 impl Cli {
     pub fn validate(&self) -> Result<()> {
         if !self.types_file.exists() {
-            return Err(crate::error::TypeTesterError::FileReadError(
+            return Err(TypeTesterError::IoError(
                 std::io::Error::new(
                     std::io::ErrorKind::NotFound,
                     format!("File not found: {}", self.types_file.display()),
@@ -28,7 +28,7 @@ impl Cli {
         }
 
         if !self.types_file.extension().map_or(false, |ext| ext == "rs") {
-            return Err(crate::error::TypeTesterError::InvalidFileType(
+            return Err(TypeTesterError::InvalidFileType(
                 format!("File must have .rs extension: {}", self.types_file.display()),
             ));
         }
