@@ -20,7 +20,6 @@ impl TestGenerator for FieldTestGenerator {
         let type_name = format_ident!("{}", type_info.name);
         let mut tests = TokenStream::new();
 
-        // Test field accessibility
         for field in &type_info.fields {
             let field_name = format_ident!("{}", field.name);
             let test_name = format_ident!("test_field_{}", field.name);
@@ -38,7 +37,6 @@ impl TestGenerator for FieldTestGenerator {
             });
         }
 
-        // Test field attributes
         tests.extend(quote! {
             #[test]
             fn check_field_attributes() {

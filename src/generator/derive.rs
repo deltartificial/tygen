@@ -27,7 +27,6 @@ impl DeriveTestGenerator {
             quote! {
                 #[test]
                 fn implements_debug() {
-                    // Type doesn't implement Default, using std::mem::zeroed
                     let instance = unsafe { std::mem::zeroed::<#type_name>() };
                     let _result = format!("{:?}", instance);
                 }
@@ -53,7 +52,6 @@ impl DeriveTestGenerator {
             quote! {
                 #[test]
                 fn implements_clone() {
-                    // Type doesn't implement Default, using std::mem::zeroed
                     let original = unsafe { std::mem::zeroed::<#type_name>() };
                     let cloned = original.clone();
                     assert!(std::mem::size_of_val(&original) == std::mem::size_of_val(&cloned));
@@ -80,7 +78,6 @@ impl DeriveTestGenerator {
             quote! {
                 #[test]
                 fn implements_partialeq() {
-                    // Type doesn't implement Default, using std::mem::zeroed
                     let a = unsafe { std::mem::zeroed::<#type_name>() };
                     let b = unsafe { std::mem::zeroed::<#type_name>() };
                     assert_eq!(a, b);
@@ -107,7 +104,6 @@ impl DeriveTestGenerator {
             quote! {
                 #[test]
                 fn implements_serde_traits() {
-                    // Type doesn't implement Default, testing only type signatures
                     let _serialize_fn: fn(&#type_name) -> Result<String, serde_json::Error> = serde_json::to_string;
                     let _deserialize_fn: fn(&str) -> Result<#type_name, serde_json::Error> = serde_json::from_str;
                 }
@@ -127,22 +123,18 @@ impl TestGenerator for DeriveTestGenerator {
 
         let has_default = type_info.has_implementation("Default");
 
-        // Test Debug if available
         if type_info.has_implementation("Debug") {
             tests.extend(self.generate_debug_test(&type_name, has_default));
         }
 
-        // Test Clone if available
         if type_info.has_implementation("Clone") {
             tests.extend(self.generate_clone_test(&type_name, has_default));
         }
 
-        // Test PartialEq if available
         if type_info.has_implementation("PartialEq") {
             tests.extend(self.generate_partialeq_test(&type_name, has_default));
         }
 
-        // Test Serde traits if available
         if type_info.has_implementation("Serialize") && type_info.has_implementation("Deserialize")
         {
             tests.extend(self.generate_serde_test(&type_name, has_default));

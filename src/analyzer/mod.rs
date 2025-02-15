@@ -74,7 +74,6 @@ impl TypeAnalyzer {
 
     fn validate_types(&self, types: &[TypeInfo]) -> Result<()> {
         for type_info in types {
-            // Required derives or implementations
             if !type_info.has_implementation("Debug") {
                 return Err(TypeTesterError::ValidationError(format!(
                     "Type {} must implement Debug",
@@ -88,7 +87,6 @@ impl TypeAnalyzer {
                 )));
             }
 
-            // Validate serde requirements
             if type_info.requires_serde() {
                 if !type_info.has_derive("Serialize") || !type_info.has_derive("Deserialize") {
                     return Err(TypeTesterError::ValidationError(format!(
@@ -98,7 +96,6 @@ impl TypeAnalyzer {
                 }
             }
 
-            // Validate Default requirement
             if type_info.requires_default() && !type_info.has_implementation("Default") {
                 return Err(TypeTesterError::ValidationError(format!(
                     "Type {} must implement Default (either derive it or implement it manually)",

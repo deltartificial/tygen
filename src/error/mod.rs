@@ -22,6 +22,18 @@ pub enum TypeTesterError {
 
     #[error("Syntax error: {0}")]
     SyntaxError(#[from] syn::Error),
+
+    #[error("Type analysis failed: {0}")]
+    AnalyzerError(String),
+
+    #[error("Test formatting failed: {0}")]
+    FormattingError(String),
+}
+
+impl From<String> for TypeTesterError {
+    fn from(error: String) -> Self {
+        TypeTesterError::GenerationError(error)
+    }
 }
 
 pub type Result<T> = std::result::Result<T, TypeTesterError>;

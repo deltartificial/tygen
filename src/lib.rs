@@ -1,7 +1,5 @@
-// Re-export the types from type.rs
 pub use crate::types::*;
 
-// Include the types module
 pub mod types {
     use serde::{Deserialize, Serialize};
     use std::default::Default;
@@ -36,6 +34,5 @@ pub mod types {
     }
 }
 
-// Make sure tests can find the types
 #[cfg(test)]
 pub use self::types::*;
