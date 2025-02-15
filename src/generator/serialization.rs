@@ -1,0 +1,44 @@
+use crate::analyzer::TypeInfo;
+use proc_macro2::TokenStream;
+use quote::{quote, format_ident};
+use super::TestGenerator;
+
+pub struct SerializationTestGenerator;
+
+impl SerializationTestGenerator {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl TestGenerator for SerializationTestGenerator {
+    fn generate(&self, type_info: &TypeInfo) -> TokenStream {
+        let type_name = format_ident!("{}", type_info.name);
+        
+        if !type_info.derives.contains(&"Serialize".to_string()) 
+            || !type_info.derives.contains(&"Deserialize".to_string()) {
+            return TokenStream::new();
+        }
+
+        quote! {
+            #[test]
+            fn serialization_roundtrip() {
+                let original = #type_name::default();
+                let serialized = serde_json::to_string(&original)
+                    .expect("Failed to serialize");
+                let deserialized: #type_name = serde_json::from_str(&serialized)
+                    .expect("Failed to deserialize");
+                assert_eq!(original, deserialized);
+            }
+
+            #[test]
+            fn serialization_format() {
+                let value = #type_name::default();
+                let serialized = serde_json::to_string_pretty(&value)
+                    .expect("Failed to serialize");
+                let _: serde_json::Value = serde_json::from_str(&serialized)
+                    .expect("Invalid JSON format");
+            }
+        }
+    }
+} 
