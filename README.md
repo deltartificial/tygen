@@ -1,4 +1,4 @@
-# Tygen
+# Tygen ⚗️
 
 A powerful Rust CLI tool for automatically generating comprehensive test suites for Rust types.
 
