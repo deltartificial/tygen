@@ -109,7 +109,10 @@ impl TestSuite {
 
         let mut test_stream = TokenStream::new();
         let type_names: Vec<_> = types.iter().map(|t| format_ident!("{}", &t.name)).collect();
-        let imports = self.collect_required_imports(types);
+
+        let mut imports = self.collect_required_imports(types);
+        imports.remove("std::default::Default");
+
         let import_vec: Vec<_> = imports
             .into_iter()
             .map(|i| {
@@ -118,11 +121,11 @@ impl TestSuite {
             })
             .collect();
 
-        // Generate imports
+        // Generate imports in a consistent order
         test_stream.extend(quote! {
             use type_tester::types::{#(#type_names),*};
-            #(use #import_vec;)*
             use std::default::Default;
+            #(use #import_vec;)*
         });
 
         // Generate test modules

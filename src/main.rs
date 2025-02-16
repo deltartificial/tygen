@@ -47,7 +47,6 @@ fn run() -> Result<()> {
     let output_path = cli.output_dir.join("generated_tests.rs");
     std::fs::write(&output_path, tests).map_err(|e| TypeTesterError::IoError(e))?;
 
-    // Run cargo fmt on the generated file
     cli.log_info("Formatting generated tests...");
     match Command::new("cargo")
         .args(["fmt", "--", &output_path.to_string_lossy()])

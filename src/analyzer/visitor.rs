@@ -53,7 +53,7 @@ impl TypeVisitor {
             derives: self.extract_derives(&item.attrs),
             attributes: self.extract_attributes(&item.attrs),
             fields: self.extract_fields(&item.fields),
-            manual_impls: Vec::new(), // Will be filled in second pass
+            manual_impls: Vec::new(),
         }
     }
 
@@ -64,12 +64,12 @@ impl TypeVisitor {
             derives: self.extract_derives(&item.attrs),
             attributes: self.extract_attributes(&item.attrs),
             fields: Vec::new(),
-            manual_impls: Vec::new(), // Will be filled in second pass
+            manual_impls: Vec::new(),
         }
     }
 
     fn extract_impl_type_name(&self, item: &ItemImpl) -> Option<String> {
-        if let Some((_, path, _)) = &item.trait_ {
+        if let Some((_, _path, _)) = &item.trait_ {
             item.self_ty.to_token_stream().to_string().into()
         } else {
             item.self_ty.to_token_stream().to_string().into()

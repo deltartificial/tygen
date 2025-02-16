@@ -13,7 +13,7 @@ impl SizeTestGenerator {
 
 impl TestGenerator for SizeTestGenerator {
     fn is_applicable(&self, _type_info: &TypeInfo) -> bool {
-        true // Size tests are applicable to all types
+        true
     }
 
     fn generate(&self, type_info: &TypeInfo) -> TokenStream {

@@ -33,6 +33,3 @@ pub mod types {
         }
     }
 }
-
-#[cfg(test)]
-pub use self::types::*;
