@@ -27,6 +27,7 @@ pub enum TypeTesterError {
     AnalyzerError(String),
 
     #[error("Test formatting failed: {0}")]
+    #[allow(dead_code)]
     FormattingError(String),
 }
 
