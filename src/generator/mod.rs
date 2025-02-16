@@ -89,7 +89,8 @@ impl TestSuite {
             }
 
             if type_info.requires_serde() {
-                imports.extend(vec!["serde", "serde_json"]);
+                imports.insert("serde");
+                imports.insert("serde_json");
             }
             if type_info.requires_default() {
                 imports.insert("std::default::Default");
@@ -109,14 +110,22 @@ impl TestSuite {
         let mut test_stream = TokenStream::new();
         let type_names: Vec<_> = types.iter().map(|t| format_ident!("{}", &t.name)).collect();
         let imports = self.collect_required_imports(types);
-        let import_vec: Vec<_> = imports.into_iter().collect();
+        let import_vec: Vec<_> = imports
+            .into_iter()
+            .map(|i| {
+                let segments: Vec<_> = i.split("::").map(|s| format_ident!("{}", s)).collect();
+                quote!(#(#segments)::*)
+            })
+            .collect();
 
+        // Generate imports
         test_stream.extend(quote! {
             use type_tester::types::{#(#type_names),*};
             #(use #import_vec;)*
             use std::default::Default;
         });
 
+        // Generate test modules
         for type_info in types {
             let test_name = format_ident!("test_{}", type_info.name.to_lowercase());
             let mut type_tests = TokenStream::new();
@@ -143,15 +152,13 @@ impl TestSuite {
                 )));
             }
 
-            let module = quote! {
+            test_stream.extend(quote! {
                 #[cfg(test)]
                 mod #test_name {
                     use super::*;
                     #type_tests
                 }
-            };
-
-            test_stream.extend(module);
+            });
         }
 
         Ok(test_stream.to_string())
