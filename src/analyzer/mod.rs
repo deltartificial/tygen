@@ -11,6 +11,7 @@ pub struct TypeInfo {
     pub name: String,
     pub kind: TypeKind,
     pub derives: Vec<String>,
+    #[allow(dead_code)]
     pub attributes: Vec<String>,
     pub fields: Vec<FieldInfo>,
     pub manual_impls: Vec<String>,
@@ -42,6 +43,7 @@ impl TypeInfo {
 pub struct FieldInfo {
     pub name: String,
     pub ty: String,
+    #[allow(dead_code)]
     pub attributes: Vec<String>,
 }
 

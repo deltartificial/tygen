@@ -69,7 +69,7 @@ impl TypeVisitor {
     }
 
     fn extract_impl_type_name(&self, item: &ItemImpl) -> Option<String> {
-        if let Some((_, _path, _)) = &item.trait_ {
+        if let Some((_, path, _)) = &item.trait_ {
             item.self_ty.to_token_stream().to_string().into()
         } else {
             item.self_ty.to_token_stream().to_string().into()

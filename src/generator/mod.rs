@@ -16,9 +16,13 @@ pub use self::size::SizeTestGenerator;
 
 #[derive(Default)]
 pub struct TestConfig {
+    #[allow(dead_code)]
     pub check_derives: bool,
+    #[allow(dead_code)]
     pub check_serialization: bool,
+    #[allow(dead_code)]
     pub check_size: bool,
+    #[allow(dead_code)]
     pub check_fields: bool,
 }
 
@@ -28,10 +32,38 @@ pub trait TestGenerator {
     fn required_imports(&self) -> Vec<&'static str> {
         Vec::new()
     }
+    fn generator_type(&self) -> &'static str {
+        "default"
+    }
+}
+
+impl TestGenerator for DeriveTestGenerator {
+    fn generator_type(&self) -> &'static str {
+        "derive"
+    }
+}
+
+impl TestGenerator for SerializationTestGenerator {
+    fn generator_type(&self) -> &'static str {
+        "serialization"
+    }
+}
+
+impl TestGenerator for SizeTestGenerator {
+    fn generator_type(&self) -> &'static str {
+        "size"
+    }
+}
+
+impl TestGenerator for FieldTestGenerator {
+    fn generator_type(&self) -> &'static str {
+        "field"
+    }
 }
 
 pub struct TestSuite {
     generators: Vec<Box<dyn TestGenerator>>,
+    #[allow(dead_code)]
     config: TestConfig,
 }
 
@@ -115,11 +147,11 @@ impl TestSuite {
 
             for generator in &self.generators {
                 if generator.is_applicable(type_info) {
-                    let should_generate = match generator {
-                        g if g.type_id() == std::any::TypeId::of::<DeriveTestGenerator>() => self.config.check_derives,
-                        g if g.type_id() == std::any::TypeId::of::<SerializationTestGenerator>() => self.config.check_serialization,
-                        g if g.type_id() == std::any::TypeId::of::<SizeTestGenerator>() => self.config.check_size,
-                        g if g.type_id() == std::any::TypeId::of::<FieldTestGenerator>() => self.config.check_fields,
+                    let should_generate = match generator.generator_type() {
+                        "derive" => self.config.check_derives,
+                        "serialization" => self.config.check_serialization,
+                        "size" => self.config.check_size,
+                        "field" => self.config.check_fields,
                         _ => true,
                     };
                     if should_generate {
