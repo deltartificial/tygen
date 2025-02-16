@@ -1,16 +1,16 @@
 [package]
-name = "type-tester"
+name = "tygen"
 version = "0.1.0"
 edition = "2021"
 authors = ["Your Name <your.email@example.com>"]
 description = "A CLI tool for generating comprehensive tests for Rust types"
 
 [lib]
-name = "type_tester"
+name = "tygen"
 path = "src/lib.rs"
 
 [[bin]]
-name = "type-tester"
+name = "tygen"
 path = "src/main.rs"
 
 [dependencies]
