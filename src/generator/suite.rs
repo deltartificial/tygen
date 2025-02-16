@@ -58,23 +58,32 @@ impl TestSuite {
         for type_info in types {
             for generator in &self.generators {
                 if generator.is_applicable(type_info) {
-                    imports.extend(generator.required_imports());
+                    let should_generate = match generator.generator_type() {
+                        "derive" => self.config.check_derives,
+                        "serialization" => self.config.check_serialization,
+                        "size" => self.config.check_size,
+                        "field" => self.config.check_fields,
+                        _ => true,
+                    };
+                    if should_generate {
+                        imports.extend(generator.required_imports());
+                    }
                 }
             }
 
-            if type_info.requires_serde() {
-                imports.insert("serde");
+            if type_info.requires_serde() && self.config.check_serialization {
                 imports.insert("serde_json");
-            }
-            if type_info.requires_default() {
-                imports.insert("std::default::Default");
             }
         }
 
         imports
     }
 
-    pub fn generate_tests(&self, types: &[TypeInfo]) -> Result<String> {
+    pub fn generate_tests(
+        &self,
+        types: &[TypeInfo],
+        source_file: &std::path::Path,
+    ) -> Result<String> {
         if types.is_empty() {
             return Err(TypeTesterError::GenerationError(
                 "No types found to generate tests for".to_string(),
@@ -82,6 +91,20 @@ impl TestSuite {
         }
 
         let mut test_stream = TokenStream::new();
+
+        let source_file_name = source_file
+            .file_name()
+            .ok_or_else(|| {
+                TypeTesterError::GenerationError("Could not get source file name".to_string())
+            })?
+            .to_string_lossy();
+
+        let source_path = format!("../{}", source_file_name);
+        test_stream.extend(quote! {
+            #[path = #source_path]
+            mod parent;
+        });
+
         let type_names: Vec<_> = types.iter().map(|t| format_ident!("{}", &t.name)).collect();
 
         let mut imports = self.collect_required_imports(types);
@@ -89,17 +112,26 @@ impl TestSuite {
 
         let import_vec: Vec<_> = imports
             .into_iter()
+            .filter(|i| !i.is_empty())
             .map(|i| {
                 let segments: Vec<_> = i.split("::").map(|s| format_ident!("{}", s)).collect();
                 quote!(#(#segments)::*)
             })
             .collect();
 
-        test_stream.extend(quote! {
-            use type_tester::types::{#(#type_names),*};
-            use std::default::Default;
-            #(use #import_vec;)*
-        });
+        let mut used_imports = TokenStream::new();
+        if !type_names.is_empty() {
+            used_imports.extend(quote! {
+                use parent::{#(#type_names),*};
+            });
+        }
+        if !import_vec.is_empty() {
+            used_imports.extend(quote! {
+                #(use #import_vec;)*
+            });
+        }
+
+        test_stream.extend(used_imports);
 
         for type_info in types {
             let test_name = format_ident!("test_{}", type_info.name.to_lowercase());
