@@ -146,4 +146,8 @@ impl TestGenerator for DeriveTestGenerator {
     fn required_imports(&self) -> Vec<&'static str> {
         vec!["std::mem"]
     }
+
+    fn generator_type(&self) -> &'static str {
+        "derive"
+    }
 }

@@ -54,4 +54,8 @@ impl TestGenerator for SizeTestGenerator {
             }
         }
     }
+
+    fn generator_type(&self) -> &'static str {
+        "size"
+    }
 }

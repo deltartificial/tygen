@@ -37,30 +37,6 @@ pub trait TestGenerator {
     }
 }
 
-impl TestGenerator for DeriveTestGenerator {
-    fn generator_type(&self) -> &'static str {
-        "derive"
-    }
-}
-
-impl TestGenerator for SerializationTestGenerator {
-    fn generator_type(&self) -> &'static str {
-        "serialization"
-    }
-}
-
-impl TestGenerator for SizeTestGenerator {
-    fn generator_type(&self) -> &'static str {
-        "size"
-    }
-}
-
-impl TestGenerator for FieldTestGenerator {
-    fn generator_type(&self) -> &'static str {
-        "field"
-    }
-}
-
 pub struct TestSuite {
     generators: Vec<Box<dyn TestGenerator>>,
     #[allow(dead_code)]

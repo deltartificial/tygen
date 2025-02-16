@@ -61,4 +61,8 @@ impl TestGenerator for SerializationTestGenerator {
             }
         }
     }
+
+    fn generator_type(&self) -> &'static str {
+        "serialization"
+    }
 }

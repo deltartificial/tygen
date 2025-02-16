@@ -48,4 +48,8 @@ impl TestGenerator for FieldTestGenerator {
 
         tests
     }
+
+    fn generator_type(&self) -> &'static str {
+        "field"
+    }
 }
